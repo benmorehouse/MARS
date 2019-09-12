@@ -1,0 +1,11 @@
+---
+default:
+        cmd: | #/usr/bin/env bash
+
+
+                clear
+
+                cd ~/repositories/marshall_database_project
+
+                go build  -o /tmp/marhshall_database_project .
+                /tmp/marhshall_database_project 

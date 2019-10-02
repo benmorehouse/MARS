@@ -7,7 +7,7 @@ default:
 
                 cd ~/repositories/marshall_database_project
                 go build  
-                ./marshall_database_project -file=data.csv
+                ./marshall_database_project -file=data.csv -default=true
 
 
 

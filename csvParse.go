@@ -3,19 +3,14 @@ package main
 import(
 	"encoding/csv"
 	"flag"
-	"fmt"
 	"log"
 	"os"
+	"fmt"
+	"sync"
 )
-
-type db struct{
-	NumColumns int
-	DesignatedColumns []int
-	ColumnsExist map[string]bool // a set that tells us all the possible columns the user could choose from 
-	ColumnData []string
-}
-
 // Need to go and look at something that you can do with the csv file system management that they have in go
+var wg sync.WaitGroup
+
 func fetchCSV(){
 	csv_filename := flag.String("file","", "csv data file")
 	_default := flag.Bool("default",false, "tells us whether they want to customize which rows to get or to just pass in defulat  configuration ")
@@ -50,17 +45,6 @@ func fetchCSV(){
 		log.Fatal("The file only has one row of data")
 	}
 
-
-	for i:=0;i<marshalldb.NumColumns;i++{
-		if i == marshalldb.NumColumns - 1{
-			fmt.Println(columns[i])
-			marshalldb.ColumnsExist[columns[i]] = true
-			break
-		}
-		marshalldb.ColumnsExist[columns[i]] = true
-		fmt.Print(string(i) + string(". ") + columns[i] + ", ")
-	}
-
 	if *_default == false{
 		err = marshalldb.AssignColumns(columns) // need to pass in columns
 		if err != nil{
@@ -68,12 +52,29 @@ func fetchCSV(){
 		}
 	}else{
 		// we want index 17, 18 19-23 is which class they were in 24-28 shows which professor that they are going for
-		err = marshalldb.AssignDefault()
+		err = marshalldb.AssignDefault(columns)
 		if err != nil{
 			log.Fatal("Input CSV file is not of correct length")
 		}
 	}
+	// at this point we have the Assigned Columns updated within the database
+	data , err := file_reader.Read()
 
-
+	c := make(chan int)
+	channelCount := 0
+	for err == nil{
+		wg.Add(1)
+		go func(){
+			defer wg.Done()
+			marshalldb.ParseData(data, channelCount, c)
+		}()
+		channelCount++
+		data , err = file_reader.Read()
+	}
+// at this point the lengnth of the channel is 0
+	wg.Wait()
+	for i:=range c{
+		fmt.Println(i)
+	}
+	close(c)
 }
-

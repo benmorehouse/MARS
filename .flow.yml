@@ -6,6 +6,9 @@ default:
                 clear
 
                 cd ~/repositories/marshall_database_project
+                go build  
+                ./marshall_database_project -file=data.csv
 
-                go build  -o /tmp/marhshall_database_project .
-                /tmp/marhshall_database_project 
+
+
+

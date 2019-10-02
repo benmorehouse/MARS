@@ -6,70 +6,74 @@ import(
 	"fmt"
 	"log"
 	"os"
-	"strings"
 )
 
-/*
-final goal is to have a struct where it has counted each class that has been attended
-*/
 type db struct{
-	num_columns int
-	first_name string
-	last_name string
-	course string
-	student_id string
-	professor []string
-	professor_attendence []int
-}
-
-type class struct{
-	name string
-	attendance int
-}
-
-type line struct{
-	num_columns int
-	first_name string
-	last_name string
-
+	NumColumns int
+	DesignatedColumns []int
+	ColumnsExist map[string]bool // a set that tells us all the possible columns the user could choose from 
+	ColumnData []string
 }
 
 // Need to go and look at something that you can do with the csv file system management that they have in go
 func fetchCSV(){
-	csv_filename := flag.String("csv","data.csv", "csv data file")
+	csv_filename := flag.String("file","", "csv data file")
+	_default := flag.Bool("default",false, "tells us whether they want to customize which rows to get or to just pass in defulat  configuration ")
 	flag.Parse()
-	file, err := os.Open(*csv_filename) // this will go and open the io.reader supplied by the flag
+
+	if *csv_filename == ""{
+		log.Fatal("You have not passed in a csv file")
+	}
+
+	file, err := os.Open(*csv_filename)
+
+	if err != nil{
+		log.Fatal("Not able to open the inputted CSV file")
+	}
+
 	file_reader := csv.NewReader(file) // file is io.reader that reads file
-	column_description , err := file_reader.Read()
 
+	column_description , err := file_reader.Read() // reads the first line of the csv file
 
-	//lines has all the information that we need now
 	if err != nil{
 		log.Fatal("Not able to read the inputted CSV file")
 	}
-	fmt.Println(column_description)
-	fmt.Println(len(column_description))
-	for i , val := range column_description{
-		if strings.TrimSpace(strings.ToLower(val)) == "recipientlastname"{
-			fmt.Println("Found the recipientlastname",i)
+
+	var marshalldb = db{
+		NumColumns: len(column_description),
+		ColumnsExist: make(map[string]bool),
+	}
+
+	columns , err := file_reader.Read()
+
+	if err != nil{
+		log.Fatal("The file only has one row of data")
+	}
+
+
+	for i:=0;i<marshalldb.NumColumns;i++{
+		if i == marshalldb.NumColumns - 1{
+			fmt.Println(columns[i])
+			marshalldb.ColumnsExist[columns[i]] = true
+			break
+		}
+		marshalldb.ColumnsExist[columns[i]] = true
+		fmt.Print(string(i) + string(". ") + columns[i] + ", ")
+	}
+
+	if *_default == false{
+		err = marshalldb.AssignColumns(columns) // need to pass in columns
+		if err != nil{
+			log.Fatal("Developer Error: database getColumns function returned non-nil")
+		}
+	}else{
+		// we want index 17, 18 19-23 is which class they were in 24-28 shows which professor that they are going for
+		err = marshalldb.AssignDefault()
+		if err != nil{
+			log.Fatal("Input CSV file is not of correct length")
 		}
 	}
 
 
-
 }
-
-/* this is how we parse lines of code
-func parse_lines(lines [][]string) []problem_set{
-	returnVal := make([]problem_set,len(lines))
-	for i, val := range lines{
-		returnVal[i] = problem_set{
-			question: val[0],
-			answer: strings.TrimSpace(val[1]),
-		}
-	}
-	return returnVal
-}
-
-*/
 

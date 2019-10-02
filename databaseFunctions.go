@@ -75,6 +75,7 @@ func (this *db) AssignDefault(columns []string)error{
 }
 
 func (this *db) ParseData(data []string,channelCount int, c chan int){ // in this i need to pass in the file_reader, a channel, and return error
+	defer wg.Done()
 	if c == nil{
 		fmt.Println("Developer error: channel memory no longer valid")
 		c<-channelCount

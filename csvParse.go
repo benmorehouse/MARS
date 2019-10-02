@@ -64,15 +64,13 @@ func fetchCSV(){
 	channelCount := 0
 	for err == nil{
 		wg.Add(1)
-		go func(){
-			defer wg.Done()
-			marshalldb.ParseData(data, channelCount, c)
-		}()
+		go marshalldb.ParseData(data, channelCount, c)
 		channelCount++
 		data , err = file_reader.Read()
 	}
 // at this point the lengnth of the channel is 0
 	wg.Wait()
+	fmt.Println("functions finished")
 	for i:=range c{
 		fmt.Println(i)
 	}

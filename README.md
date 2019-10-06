@@ -26,12 +26,22 @@ Then you are all set to run this repository!
 
 # Use
 
-To use this, simply run the executable file, and then move the finished CSV file to wherever you wish to have it located on your machine. It's as simple as that!
+There are three very important flags that you will want to work with whilst using this application
+
+-file -> what file you are parsing through. Without this flag, you will not be able too run the program
+
+-outputFile -> The desired name of the output file. Will automatically be set to output.csv
+
+-default -> If you are only looking for normal totals of attendance, pass this flag as true.
+
+Example Execution:
+	
+	./marshall_database_project -file=input.csv -default=true -outputFile=niceOutput.csv
 
 # Updates to Come
 	
 Ver 3.0 will have the following:
-- Cut out the need to move the file yourself
+- Cut out the need to move the file yourself after operation with just a flag
 - containerize the project using Docker.
 - Use postgres to hold the stored data (because remote databases are fun to work with! :) )
 

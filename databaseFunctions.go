@@ -6,6 +6,7 @@ import(
 	"os"
 	"errors"
 	"strings"
+	"sync"
 )
 
 type db struct{
@@ -74,14 +75,9 @@ func (this *db) AssignDefault(columns []string)error{
 	return nil
 }
 
-func (this *db) ParseData(data []string,channelCount int, c chan int){ // in this i need to pass in the file_reader, a channel, and return error
+func (this *db) ParseData(wg *sync.WaitGroup,data []string){ // in this i need to pass in the file_reader, a channel, and return error
 	defer wg.Done()
-	if c == nil{
-		fmt.Println("Developer error: channel memory no longer valid")
-		c<-channelCount
-		return
-	}else if len(data) == 0{
-		c<-channelCount
+	if len(data) == 0{
 		return
 	}else{
 		for i:=0;i<len(this.DesignatedColumns)-1;i++{
@@ -94,7 +90,7 @@ func (this *db) ParseData(data []string,channelCount int, c chan int){ // in thi
 				this.ColumnCount[i]++
 			}
 		}
-		c<-channelCount
+		return
 	}
 }
 

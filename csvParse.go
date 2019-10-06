@@ -5,16 +5,18 @@ import(
 	"flag"
 	"log"
 	"os"
+	"sync" // using waitGroup is great for keeping track of all the goroutines that you need
 	"fmt"
-	"sync"
 )
 // Need to go and look at something that you can do with the csv file system management that they have in go
-var wg sync.WaitGroup
+
 
 func fetchCSV(){
 	csv_filename := flag.String("file","", "csv data file")
 	_default := flag.Bool("default",false, "tells us whether they want to customize which rows to get or to just pass in defulat  configuration ")
 	flag.Parse()
+
+	wg := &sync.WaitGroup{}
 
 	if *csv_filename == ""{
 		log.Fatal("You have not passed in a csv file")
@@ -59,20 +61,12 @@ func fetchCSV(){
 	}
 	// at this point we have the Assigned Columns updated within the database
 	data , err := file_reader.Read()
-
-	c := make(chan int)
-	channelCount := 0
 	for err == nil{
 		wg.Add(1)
-		go marshalldb.ParseData(data, channelCount, c)
-		channelCount++
+		go marshalldb.ParseData(wg, data)
 		data , err = file_reader.Read()
 	}
-// at this point the lengnth of the channel is 0
+	// at this point the length of the channel is 0
 	wg.Wait()
-	fmt.Println("functions finished")
-	for i:=range c{
-		fmt.Println(i)
-	}
-	close(c)
+	fmt.Println("Test")
 }

@@ -7,6 +7,7 @@ import(
 	"log"
 	"os"
 	"sync" // using waitGroup is great for keeping track of all the goroutines that you need
+	"strings"
 )
 // Need to go and look at something that you can do with the csv file system management that they have in go
 
@@ -15,12 +16,17 @@ func fetchCSV(){
 	csv_filename := flag.String("file","", "csv data file")
 	_default := flag.Bool("default",false, "tells us whether they want to customize which rows to get or to just pass in defulat  configuration ")
 	output_filename := flag.String("outputFile","output.csv","the output file to genarate") // needs to be checked
+	stop_date := flag.String("stopDate","","the specific date to stop... must be in format 2019-09-09 (year, month, date))")
+	start_date := flag.String("startDate","","the specific date to start... csv reads from oldest to newest ... must be in format 2019-09-09 (year, month, date))")
+
 	flag.Parse()
 
 	wg := &sync.WaitGroup{}
 
 	if *csv_filename == ""{
 		log.Fatal("You have not passed in a csv file")
+	}else if *start_date ==""{
+		log.Fatal("You have not passed in a start_date. This needs to be in the form of numbers:2019-09-09")
 	}
 
 	file, err := os.Open(*csv_filename)
@@ -64,10 +70,30 @@ func fetchCSV(){
 	}
 	// at this point we have the Assigned Columns updated within the database
 	data , err := file_reader.Read()
+	temp := data[0]
+	tempField := strings.Fields(temp)
+
+	for tempField[0] != *start_date{
+		data , err := file_reader.Read()
+		if err != nil{
+			log.Fatal(err)
+		}
+		temp = data[0]
+		tempField = strings.Fields(temp)
+	}
+
+	professors := make(map[string]int)
+
 	for err == nil{
-		wg.Add(1)
-		go marshalldb.ParseData(wg, data)
-		data , err = file_reader.Read()
+		temp := data[0]
+		tempField := strings.Fields(temp)
+		if tempField[0] == *stop_date{
+			break
+		}else{
+			wg.Add(1)
+			go marshalldb.ParseData(wg, data, professors)
+			data , err = file_reader.Read()
+		}
 	}
 	wg.Wait()
 
@@ -85,7 +111,7 @@ func fetchCSV(){
 		log.Fatal("writer is nil")
 	}
 
-	err = writer.WriteAll(marshalldb.PushData())
+	err = writer.WriteAll(marshalldb.PushData(professors))
 
 	if err != nil{
 		log.Fatal("Couldnt write the output csv file:",err)

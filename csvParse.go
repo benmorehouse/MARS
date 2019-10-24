@@ -82,7 +82,7 @@ func fetchCSV(){
 		tempField = strings.Fields(temp)
 	}
 
-	professors := make(map[string]int)
+//	var professors = sync.Map{}
 
 	for err == nil{
 		temp := data[0]
@@ -91,7 +91,7 @@ func fetchCSV(){
 			break
 		}else{
 			wg.Add(1)
-			go marshalldb.ParseData(wg, data, professors)
+			go marshalldb.ParseData(wg, data) // this will pass in each of the professors. This is thread safe
 			data , err = file_reader.Read()
 		}
 	}
@@ -111,7 +111,7 @@ func fetchCSV(){
 		log.Fatal("writer is nil")
 	}
 
-	err = writer.WriteAll(marshalldb.PushData(professors))
+	err = writer.WriteAll(marshalldb.PushData())
 
 	if err != nil{
 		log.Fatal("Couldnt write the output csv file:",err)

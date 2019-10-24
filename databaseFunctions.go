@@ -81,7 +81,7 @@ func (this *db) AssignDefault()error{
 this will parse each line of the file and total it up depending on what has been passed through as important
 this is where i can change the column description and such 
 */
-func (this *db) ParseData(wg *sync.WaitGroup,data []string, professors map[string]int){
+func (this *db) ParseData(wg *sync.WaitGroup,data []string){
 	defer wg.Done()
 	if len(data) == 0{
 		return
@@ -93,14 +93,23 @@ func (this *db) ParseData(wg *sync.WaitGroup,data []string, professors map[strin
 			}else if data[index] == ""{
 				continue
 			}else{
-				if index >= 24{
+	/*			if index >= 24{
 					this.ColumnCount[i]++
-					if data[index] != ""{
-						temp := professors[data[index]]
-						temp++
-						professors[data[index]] = temp
+					if data[index] != ""{ // here we need to correctly get the data from the map
+						temp, exists := professors.Load(data[index])
+						if !exists{
+							professors.Store(data[index], 1)
+						}else{
+							newValue, ok := temp.(int) // type assertion which means we check for type
+							if !ok{  // if not an int then we push panic back through stack
+								panic("broken interface in parsedata")
+							}
+							newValue++
+							professors.Store(data[index], newValue)
+						}
 					}
 				}
+	*/
 				this.ColumnCount[i]++
 			}
 		}
@@ -112,7 +121,7 @@ func (this *db) ParseData(wg *sync.WaitGroup,data []string, professors map[strin
 In this function we want to total up each of the columns that we have been counting and display them 
 */
 
-func (this *db) PushData(professors map[string]int)[][]string{ // want it to a 2d array of strings
+func (this *db) PushData()[][]string{ // want it to a 2d array of strings
 	var output [][]string
 	var line []string
 	for i , val := range this.ColumnCount{ // columnCount is not correct for last values
@@ -121,14 +130,20 @@ func (this *db) PushData(professors map[string]int)[][]string{ // want it to a 2
 		output = append(output, line)
 		line = nil
 	}
-
-	for k, v := range professors{
-		line = append(line,k)
-		line = append(line,strconv.Itoa(v))
+	// need to figure out how to get map range function working
+/*
+	professors.Range(f (key string, value int) bool{
+		temp, exists := professors.Load(key)
+		if !exists{
+			return false
+		}
+		line = append(line, key)
+		line = append(line,strconv.Itoa(value))
 		output = append(output, line)
 		line = nil
+		return true
 	}
-
+*/
 	return output
 }
 

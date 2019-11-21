@@ -1,8 +1,10 @@
 # DB for Marshall school of Business
 
-This is a csv parser that I have made to count the attendance, as well as other operations for the Marshall School of business. 
-It uses some simple native libraries in Golang to total them up, and also a great way to read in a little more on 
-concurrency!
+I implemented a MySQL database for the Marshall School of Business using Go. It keeps track of attendance for their current student
+events as well as other in-house things to take care of. All that is needed from the user is an important csv file from their 
+platform!
+
+This serves as a taste of my work as a Data Intern at the school in Fall 2019. Read more below on how to run it!
 
 # Installation
 
@@ -44,5 +46,7 @@ Ver 3.0 will have the following:
 - Cut out the need to move the file yourself after operation with just a flag
 - containerize the project using Docker.
 - Use postgres to hold the stored data (because remote databases are fun to work with! :) )
+- Update to count all teachers concurrently 
+- use testing documentation gomock 
 
 

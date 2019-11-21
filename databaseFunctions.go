@@ -63,6 +63,7 @@ This assigns everything to default
 */
 func (this *db) AssignDefault()error{
 	if this.NumColumns != 29{
+		fmt.Println(this.NumColumns)
 		return errors.New("Error within given CSV file input: column Size")
 	}else{
 		for i:=0;i<this.NumColumns;i++{
@@ -81,39 +82,34 @@ func (this *db) AssignDefault()error{
 this will parse each line of the file and total it up depending on what has been passed through as important
 this is where i can change the column description and such 
 */
-func (this *db) ParseData(wg *sync.WaitGroup,data []string){
-	defer wg.Done()
-	if len(data) == 0{
+
+func (this *db) clearTable(sqlDatabase *sql.DB, tableName string){
+	err = sqlDatabase.exec("delete from " + tableName)
+	if err != nil{
+		panic(err)
+	}
+}
+
+func (this *db) ParseData(wg *sync.WaitGroup, row []string, sqlDatabase *sql.DB, query string)(error){
+	if *wg == nil || len(data) == 0 || sqlDatabase == nil{
 		return
 	}else{
-		for i:=0;i<len(this.DesignatedColumns);i++{
-			index := this.DesignatedColumns[i]
-			if index >= len(data) || index < 0{
-				continue
-			}else if data[index] == ""{
-				continue
+		defer wg.Done()
+		//insert into data (first, last) values ("Ben","Morehouse"); // make this before and then pass it in 
+		for i, val := range row{
+			rowField := strings.Fields(val)
+			if i == len(row)-1{
+				insertRowInTableString += strings.Join(rowField,"") + ");"
+				break
 			}else{
-	/*			if index >= 24{
-					this.ColumnCount[i]++
-					if data[index] != ""{ // here we need to correctly get the data from the map
-						temp, exists := professors.Load(data[index])
-						if !exists{
-							professors.Store(data[index], 1)
-						}else{
-							newValue, ok := temp.(int) // type assertion which means we check for type
-							if !ok{  // if not an int then we push panic back through stack
-								panic("broken interface in parsedata")
-							}
-							newValue++
-							professors.Store(data[index], newValue)
-						}
-					}
-				}
-	*/
-				this.ColumnCount[i]++
+				insertRowInTableString += strings.Join(rowField,"") + " , "
 			}
 		}
-		return
+		err = sqlDatabase.exec(insertRowInTableString)
+		if err != nil{
+			this.clearTable(sqlDatabase, tableName)
+			log.Fatal("Halted due to insert error")
+		}
 	}
 }
 

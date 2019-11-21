@@ -1,3 +1,11 @@
+/*
+	We should keep the same infrastructure and after we read through and store the csv file like we want, we should 
+	push it all to mysql, then do the reads in sql we want to do.
+
+*/
+
+
+
 package main
 
 import(
@@ -8,6 +16,8 @@ import(
 	"os"
 	"sync" // using waitGroup is great for keeping track of all the goroutines that you need
 	"strings"
+	"database/sql"
+	_ "github.com/ziutek/mymysql/godrv" // mysql driver 
 )
 // Need to go and look at something that you can do with the csv file system management that they have in go
 
@@ -26,8 +36,15 @@ func fetchCSV(){
 	if *csv_filename == ""{
 		log.Fatal("You have not passed in a csv file")
 	}else if *start_date ==""{
-		log.Fatal("You have not passed in a start_date. This needs to be in the form of numbers:2019-09-09")
+		log.Fatal("You have not passed in a startDate. This needs to be in the form of numbers:2019-09-09")
 	}
+
+	// we now have the flags... lets open up the database
+	connection , err := sql.Open("mymysql","MARSdb/benmorehouse/Moeller12!")
+	if err != nil{
+		log.Fatal("Unable to open the marshall database... check to make sure that you have a mysql database with the name \"MARSdb\" open")
+	}
+	defer connection.Close()
 
 	file, err := os.Open(*csv_filename)
 
@@ -38,10 +55,10 @@ func fetchCSV(){
 	file_reader := csv.NewReader(file) // file is io.reader that reads file
 
 	column_description , err := file_reader.Read() // reads the first line of the csv file
-
 	if err != nil{
 		log.Fatal("Not able to read the inputted CSV file")
 	}
+	// so we want to create a new table with these as the column names
 
 	var marshalldb = db{
 		NumColumns: len(column_description),
@@ -49,9 +66,24 @@ func fetchCSV(){
 	}
 
 	columns , err := file_reader.Read() // pushes cursor to next line 
-
 	if err != nil{
 		log.Fatal("The file only has one row of data")
+	}
+
+	createTableString := "CREATE TABLE IF NOT EXISTS ("
+	for i, val := range columns{
+		columnField := strings.Fields(val)
+		if i == len(columns)-1{
+			createTableString += strings.Join(columnField,"") + " text);"
+			break
+		}else{
+			createTableString += strings.Join(columnField,"") + " text, "
+		}
+	}
+
+	_ , err = connection.Exec(createTableString)
+	if err != nil{
+		log.Fatal("Exiting create sql table request with error code:",err)
 	}
 
 	marshalldb.ColumnDescription = columns
@@ -65,10 +97,24 @@ func fetchCSV(){
 		// we want index 17-23 is which class they were in 24-28 shows which professor that they are going for
 		err = marshalldb.AssignDefault()
 		if err != nil{
-			log.Fatal("Input CSV file is not of correct length")
+			log.Fatal("Input CSV file is not of correct length:",err)
 		}
 	}
-	// at this point we have the Assigned Columns updated within the database
+
+	insertRowInTableString := "insert into " + table " (" // this needs to have a lot of stuff into it
+	for i, val := range columns{
+		columnField := strings.Fields(val)
+		if i == len(columns)-1{
+			insertRowInTableString += strings.Join(columnField,"") + " text);"
+			break
+		}else{
+			insertRowInTableString += strings.Join(columnField,"") + " text, "
+		}
+	}
+
+	// at this point we have the Assigned Columns updated within the class and need to start importing the downloaded data into sql
+
+/* this can all be done more efficiently with sql commands
 	data , err := file_reader.Read()
 	temp := data[0]
 	tempField := strings.Fields(temp)
@@ -81,7 +127,6 @@ func fetchCSV(){
 		temp = data[0]
 		tempField = strings.Fields(temp)
 	}
-
 //	var professors = sync.Map{}
 
 	for err == nil{
@@ -96,8 +141,20 @@ func fetchCSV(){
 		}
 	}
 	wg.Wait()
+*/
 
 	// at this point we need to make a CSV file output
+
+	data , err := file_reader.Read()
+	for err == nil{
+		data , err := file_reader.Read() // data is a column field
+		if err != nil{
+			log.Fatal(err)
+		}
+		go marshadb.ParseData(&wg,data,connection,insertRowInTableString)
+		// go write this into our database! Can use concurrency here
+	}
+	wg.Wait()
 
 	outputFile , err := os.Create(*output_filename)
 

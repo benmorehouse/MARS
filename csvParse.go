@@ -2,9 +2,9 @@
 	We should keep the same infrastructure and after we read through and store the csv file like we want, we should 
 	push it all to mysql, then do the reads in sql we want to do.
 
+	//	username:password@tcp(127.0.0.1:3306)/test
+	//	create table attendance( firstname varchar(30), lastname varchar(30), class varchar(30), professor varchar(30) );
 */
-
-
 
 package main
 
@@ -17,12 +17,11 @@ import(
 	"sync" // using waitGroup is great for keeping track of all the goroutines that you need
 	"strings"
 	"database/sql"
-	_ "github.com/ziutek/mymysql/godrv" // mysql driver 
 )
 // Need to go and look at something that you can do with the csv file system management that they have in go
 
-
 func fetchCSV(){
+
 	csv_filename := flag.String("file","", "csv data file")
 	_default := flag.Bool("default",false, "tells us whether they want to customize which rows to get or to just pass in defulat  configuration ")
 	output_filename := flag.String("outputFile","output.csv","the output file to genarate") // needs to be checked

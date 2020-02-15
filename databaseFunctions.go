@@ -12,7 +12,7 @@ import(
 type db struct{
 	NumColumns int
 	DesignatedColumns []int
-	ColumnsExist map[string]bool // a set that tells us all the possible columns the user could choose from 
+	ColumnsExist map[string]bool
 	ColumnCount []int
 	ColumnDescription []string
 }

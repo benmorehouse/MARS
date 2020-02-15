@@ -1,0 +1,12 @@
+{
+	"DBName":"",
+	"DBUser":"",
+	"DBPort":"",
+	"DBip":"",
+	"DataTable":"",
+	"OutFile":"",
+	"InFile":"",
+	"IsDefault":true,
+	"StartDate":"",
+	"StopDate":""
+}

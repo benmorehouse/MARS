@@ -22,16 +22,6 @@ import(
 
 func fetchCSV(){
 
-	csv_filename := flag.String("file","", "csv data file")
-	_default := flag.Bool("default",false, "tells us whether they want to customize which rows to get or to just pass in defulat  configuration ")
-	output_filename := flag.String("outputFile","output.csv","the output file to genarate") // needs to be checked
-	stop_date := flag.String("stopDate","","the specific date to stop... must be in format 2019-09-09 (year, month, date))")
-	start_date := flag.String("startDate","","the specific date to start... csv reads from oldest to newest ... must be in format 2019-09-09 (year, month, date))")
-
-	flag.Parse()
-
-	wg := &sync.WaitGroup{}
-
 	if *csv_filename == ""{
 		log.Fatal("You have not passed in a csv file")
 	}else if *start_date ==""{

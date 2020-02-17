@@ -8,7 +8,6 @@ import(
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	_ "github.com/go-sql-driver/mysql"
 )
 
 type AppConf struct{
@@ -25,50 +24,55 @@ type AppConf struct{
 	StopDate		string `json:"StopDate"`
 }
 
-func loadConfig() (*AppConf, error) {
+func (a *App) loadConfig() error {
 
-	defaultConfig := &AppConf {
-		DBName: "MARSdb",
-		DBUser: "benmorehouse",
-		DBPass: "Moeller12!", // this is just my password.
-		DBPort: "3306",
-		DBIP: "127.0.0.1",
-		DataTable: "attendance",
-		InFile: "input",
-		OutFile: "output",
-		IsDefault: true,
-		StartDate: getToday(),
-		StopDate: getToday(),
+	handleError := func(a *App) {
+
+		t := time.Now()
+		s := strings.Fields(t)
+		today := s[0]
+
+		defaultConfig := &AppConf {
+			DBName: "MARSdb",
+			DBUser: "benmorehouse",
+			DBPass: "Moeller12!", // this is just my password.
+			DBPort: "3306",
+			DBIP: "127.0.0.1",
+			DataTable: "attendance",
+			InFile: "input",
+			OutFile: "output",
+			IsDefault: true,
+			StartDate: today,
+			StopDate: today,
+		}
+
+		log.Warning("Using native default configuration.")
+		a.Conf = defaultConfig
 	}
 
 	jsonFile, err := os.Open("conf.json")
 	defer jsonFile.Close()
 	if err != nil{
-		log.Error(err)
-		return defaultConfig, err
+		handleError(a)
+		return err
 	}
 
 	config := AppConf{}
 	confData, err := ioutil.ReadAll(jsonFile)
 	if err != nil{
-		log.Error(err)
-		return defaultConfig, err
+		handleError(a)
+		return err
 	}
 
 	if err = json.Unmarshal(confData, &config); err != nil{
-		log.Error(err)
-		return defaultConfig, err
+		handleError(a)
+		return err
 	}
 
-	return config, nil
+	a.Conf = config
+	return nil
 }
 
 // A simple function to return a pretty printed date for default.
-func getToday() (string) {
-
-	t := time.Now()
-	s := strings.Fields(t)
-	return s[0]
-}
 
 

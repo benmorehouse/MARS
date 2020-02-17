@@ -34,7 +34,7 @@ func main(){
 		return
 	}
 
-	gen, err := parseCSV()
+	err := a.Feed()
 	if err != nil {
 		log.Error(err)
 		return

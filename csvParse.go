@@ -1,11 +1,3 @@
-/*
-	We should keep the same infrastructure and after we read through and store the csv file like we want, we should 
-	push it all to mysql, then do the reads in sql we want to do.
-
-	//	username:password@tcp(127.0.0.1:3306)/test
-	//	create table attendance( firstname varchar(30), lastname varchar(30), class varchar(30), professor varchar(30) );
-*/
-
 package main
 
 import(
@@ -19,6 +11,7 @@ import(
 	log "github.com/sirupsen/logrus"
 )
 
+// Opens the csv input and feeds into database the information.
 func (a *App) Feed() error {
 	conf := a.Conf
 	if conf == nil {

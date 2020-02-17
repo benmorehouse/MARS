@@ -5,6 +5,14 @@ import(
 	"errors"
 )
 
+type attendanceField interface{
+	Exists() (bool, error)
+}
+
+type GenFirstname struct{
+	
+}
+
 type AttendanceSQL struct{
 	Firstname	string
 	lastname	string
@@ -92,8 +100,77 @@ func (a *App) GetAllProfessors() ([]string, error) {
 	return professors, nil
 }
 
+func (a *App) CountProfessorAttendance(professors []string) (map[string]int, error) {
 
+	if len(professors) == 0 {
+		err := errors.New("No professors given")
+		log.Error(err)
+		return nil, err
+	}
 
+	c := a.Connection
+	if err := c.Conn.PingContext(*c.Context); err != nil {
+		return nil, err
+	}
 
+	m := make(map[string]int)
+	for _, professor := range professors {
+
+		// Create a query, then execute, then populate map.
+		query := "select count(" + professor + ") from "
+		query += a.Conf.DataTable + ";"
+
+		result, err := c.Conn.ExecContext(c.Context, query)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+
+		if count, ok := result.(int); ok {
+			m[professor] = count
+		} else {
+			err := errors.New("result being return has type indifference")
+			log.Error(err)
+			return nil, err
+		}
+	}
+
+	return m, nil
+}
+
+func (a *App) GetAllClasses() ([]string, error) {
+
+	// Need to make a query, and then execute the query, then return the rows.
+	c := a.Connection
+	if err := c.Conn.PingContext(*c.Context); err != nil {
+		return nil, err
+	}
+
+	query := "select classes from " + a.Conf.DataTable + ";"
+
+	results, err := c.Conn.QueryContext(c.Context, query)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	var classes []string
+	var class string
+	for results.Next() {
+		if err := results.Scan(class); err == nil {
+			professors = append(class, classes)
+		} else {
+			log.Error(err)
+		}
+	}
+
+	if len(class) == 0 {
+		err := errors.New("No classes found")
+		log.Error(err)
+		return nil, err
+	}
+
+	return classes, nil
+}
 
 

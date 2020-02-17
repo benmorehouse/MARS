@@ -8,8 +8,6 @@ import(
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// create table attendance( firstname varchar(30), lastname varchar(30), class varchar(30), professor varchar(30) )
-
 type Connection struct{
 	Conn		*sql.Conn //unexported connection to database
 	Context		*context.Context

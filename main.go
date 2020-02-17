@@ -40,6 +40,19 @@ func main(){
 		return
 	}
 
+	m, err := a.CountAttendance()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	if err := a.GenerateOutFile(m); err != nil {
+		log.Error(err)
+		return
+	}
+
+	a.GenerateStdOut(m)
+	log.Info("MARS Complete. Exiting Now.")
 }
 
 

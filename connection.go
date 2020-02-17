@@ -36,7 +36,7 @@ func (a *App) Connect() (error) {
 
 	connection := Connection {
 		Conn: &conn,
-		Context: context.Background()
+		Context: context.Background(),
 	}
 
 	a.Cxn = connection

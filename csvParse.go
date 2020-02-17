@@ -9,6 +9,110 @@
 package main
 
 import(
+	"encoding/csv"
+	"log"
+	"os"
+	"io"
+	"strings"
+	"bufio"
+
+	log "github.com/sirupsen/logrus"
+)
+
+func (a *App) Feed() error {
+	conf := a.Conf
+	if conf == nil {
+		err := errors.New("Config not filled out")
+		log.Error(err)
+		return err
+	}
+
+	csvFile, err := os.Open(conf.InFile)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	reader := csv.NewReader(bufio.NewReader(csvFile))
+	// A map for telling which array in the csv row to get each field.
+	m := make(map[string]int)
+	index, err := reader.Read()
+	if err == io.EOF {
+		err := errors.New("File unexpectedly found as empty")
+	}
+
+	for key, value := range index {
+		switch value {
+		case "firstname":
+			m[value] = key
+		case "lastname":
+			m[value] = key
+		case "class":
+			m[value] = key
+		case "professor":
+			m[value] = key
+		}
+	}
+
+	if err := a.CreateTableIfNotExists(); err != nil {
+		log.Error(err)
+		return err
+	}
+
+	for {
+		line, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else {
+			log.Error(err)
+			return err
+		}
+
+		s := AttendanceSQL{}
+		for key, value := range m {
+			switch key {
+			case "firstname":
+				s.Firstname = &GenFirstname{
+					Firstname: value,
+					Exists: true,
+				}
+			case "lastname":
+				s.Lastname = &GenLastname{
+					Lastname: value,
+					Exists: true,
+				}
+			case "class":
+				s.Class = &GenClass{
+					Class: value,
+					Exists: true,
+				}
+			case "professor":
+				s.Professor = &GenProfessor{
+					Professor: value,
+					Exists: true,
+				}
+			}
+		}
+
+		if err := a.InsertAttendanceRow(s); err != nil {
+			log.Error(err)
+			return err
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+/*
+package main
+
+import(
 	"fmt"
 	"encoding/csv"
 	"flag"

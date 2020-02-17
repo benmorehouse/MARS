@@ -34,6 +34,12 @@ func main(){
 		return
 	}
 
+	gen, err := parseCSV()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
 }
 
 

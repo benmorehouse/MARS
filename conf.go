@@ -1,6 +1,6 @@
 package main
 
-import(
+import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -10,18 +10,18 @@ import(
 	log "github.com/sirupsen/logrus"
 )
 
-type AppConf struct{
-	DBName			string `json:"DBName"`
-	DBUser			string `json:"DBUser"`
-	DBPass			string `json:"DBPass"`
-	DBPort			string `json:"DBPort"`
-	DBIP			string `json:"DBIP"`
-	DataTable		string `json:"DataTable"`
-	OutFile			string `json:"OutFile"`
-	InFile			string `json:"InFile"`
-	IsDefault		bool   `json:"IsDefault"`
-	StartDate		string `json:"StartDate"`
-	StopDate		string `json:"StopDate"`
+type AppConf struct {
+	DBName    string `json:"DBName"`
+	DBUser    string `json:"DBUser"`
+	DBPass    string `json:"DBPass"`
+	DBPort    string `json:"DBPort"`
+	DBIP      string `json:"DBIP"`
+	DataTable string `json:"DataTable"`
+	OutFile   string `json:"OutFile"`
+	InFile    string `json:"InFile"`
+	IsDefault bool   `json:"IsDefault"`
+	StartDate string `json:"StartDate"`
+	StopDate  string `json:"StopDate"`
 }
 
 func (a *App) loadConfig() error {
@@ -32,39 +32,40 @@ func (a *App) loadConfig() error {
 		s := strings.Fields(t)
 		today := s[0]
 
-		defaultConfig := &AppConf {
-			DBName: "MARSdb",
-			DBUser: "benmorehouse",
-			DBPass: "Moeller12!", // this is just my password.
-			DBPort: "3306",
-			DBIP: "127.0.0.1",
+		defaultConfig := &AppConf{
+			DBName:    "MARSdb",
+			DBUser:    "benmorehouse",
+			DBPass:    "Moeller12!", // this is just my password.
+			DBPort:    "3306",
+			DBIP:      "127.0.0.1",
 			DataTable: "attendance",
-			InFile: "input",
-			OutFile: "output",
+			InFile:    "input",
+			OutFile:   "output",
 			IsDefault: true,
 			StartDate: today,
-			StopDate: today,
+			StopDate:  today,
 		}
 
 		log.Warning("Using native default configuration.")
 		a.Conf = defaultConfig
 	}
 
+	// NOTE: need to create conf.json as default and use a.confFileName
 	jsonFile, err := os.Open("conf.json")
 	defer jsonFile.Close()
-	if err != nil{
+	if err != nil {
 		handleError(a)
 		return err
 	}
 
 	config := AppConf{}
 	confData, err := ioutil.ReadAll(jsonFile)
-	if err != nil{
+	if err != nil {
 		handleError(a)
 		return err
 	}
 
-	if err = json.Unmarshal(confData, &config); err != nil{
+	if err = json.Unmarshal(confData, &config); err != nil {
 		handleError(a)
 		return err
 	}
@@ -74,5 +75,3 @@ func (a *App) loadConfig() error {
 }
 
 // A simple function to return a pretty printed date for default.
-
-

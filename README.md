@@ -6,21 +6,7 @@ Qualtrics API and handling the data.
 
 # Installation
 
-If you do not have homebrew, go here: https://brew.sh
-
-Once you have homebrew, if you do not have go installed then enter
-	
-	brew install go
-
-into your desired directory.
-
-Once this is installed, pick the directory you wish to store this project, then 
-clone this repository!
-
-Finally, do the following command within the std file you downloaded: 
-        go build 
-
-Then you are all set to run this repository!
+Assuming you have a running version of Golang locally, fetch this project, build and run the binary!
 
 The project comes with a built in configuration, but feel free to explore the CLI and change what you wish.
 
